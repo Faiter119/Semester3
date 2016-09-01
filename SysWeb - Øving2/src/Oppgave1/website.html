@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Switch Picture</title>
+
+    <meta charset="UTF-8">
+
+    <link href="style.css" type="text/css" rel="stylesheet">
+
+    <script language="JavaScript" src="script.js"></script>
+
+</head>
+<body>
+
+<h1 id="h1" class="centeredText"> JavaScript </h1>
+
+<div>
+    <p id="hero" class="centeredText">Rubick</p>
+
+    <img id= "picture" class="pic" src="http://i.imgur.com/qO9qJCD.png"> <!--http://imgur.com/a/JlxCt album-->
+</div>
+
+<div>
+
+    <h2 id="h2" class="centeredText"> CSS </h2>
+
+    <p id="phoenixContainer">
+        <img id="phoenix" class="pic" src="http://i.imgur.com/6JMpUjE.png">
+    </p>
+
+</div>
+
+<script>
+
+    var img = document.getElementById("picture");
+    var h1  = document.getElementById("hero");
+
+    img.onmouseover = function() { setPicJugger(h1, img); }; // Hvilken retard fant ut at man må wrappe metoden i en metode
+    img.onmouseout = function()  { setPicRubick(h1, img); }; // faenmæ det dummeste æ har sett, tok særr 2 tima å finn ut
+
+
+    // document.write("<br>Hello! I was written by JS");
+
+
+</script>
+
+</body>
+</html>

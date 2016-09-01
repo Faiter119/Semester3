@@ -1,0 +1,23 @@
+*{
+    font-family: Consolas;
+
+}
+body{
+    background-color: #3f7f9b ;
+}
+.centeredText{
+    text-align: center;
+}
+.pic {
+    display: block;
+    margin: auto;
+    /* width: 50%;.  */
+
+
+}
+#phoenixContainer{
+    background: url("http://i.imgur.com/fTSIbBF.png") no-repeat center;
+}
+#phoenix:hover {
+    opacity: 0;
+}

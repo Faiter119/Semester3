@@ -1,0 +1,43 @@
+*{
+    font-family: Consolas, serif;
+}
+body{
+    background-color: #3f7f9b;
+}
+h1{
+    text-align: center;
+}
+p{
+    text-align: center;
+    margin: 0 20%;
+}
+form{
+    text-align: center;
+}
+button{
+    size: 20px;
+    background-color: #3f9b9b;
+}
+
+#bondesjakkbrett {
+
+    text-align: center;
+
+    margin: 5px 37%;
+
+    width:300px;
+    height:300px;
+    border: 3px solid black;
+}
+.tabellrute{
+    background-color: #ccc;
+}
+
+.playerOne{
+    background-color: #42a5f5;
+
+}
+.playerTwo{
+    background-color: #ef5350;
+
+}

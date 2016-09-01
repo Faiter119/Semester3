@@ -1,0 +1,34 @@
+*{
+    font-family: Consolas;
+    margin: 20px;
+    padding: 20px;
+}
+body{
+    background: #3F9B9B;
+}
+form:hover{
+
+}
+form{
+    text-align: left;
+    display: table-cell;
+    vertical-align: middle;
+}
+ul{
+    border: 1px #4dd0e1;
+    float: right;
+
+}
+.card{
+    "card blue-grey darken-1";
+}
+#sidebar{
+
+    display: block;
+    margin: 1em;
+    float: right;
+    padding: 0px;
+    font-family: "Arial Black";
+
+
+}
