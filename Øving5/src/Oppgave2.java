@@ -24,7 +24,7 @@ public class Oppgave2 {
 
     public static void main(String[] args) {
 
-        int[] randomIntTable = getRandomTable(10000 000, Integer.MIN_VALUE/2, Integer.MAX_VALUE/2);
+        int[] randomIntTable = getRandomTable(10000000, Integer.MIN_VALUE/2, Integer.MAX_VALUE/2);
 
         // HashMap timing
         long start = System.nanoTime();
