@@ -1,0 +1,17 @@
+*{
+    font-family: Consolas, serif;
+}
+
+body, html{
+    background-color: #3f9b9b;
+    width: 99%;
+    height: 98%;
+
+}
+body{
+    border: 2px solid black;
+}
+div{
+    display: flex;
+    justify-content: center;
+}

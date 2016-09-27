@@ -38,7 +38,7 @@ for(i=0; i<tiles.length; i++){
                 return;
             }
 
-            turn = turn ==0 ? 1 : 0;
+            turn = (turn == 0) ? 1 : 0;
             clicks = 0;
             this.className = "tabellrute";
             return;

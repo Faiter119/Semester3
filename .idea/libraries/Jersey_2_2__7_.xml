@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Jersey-2.2 (7)" type="JAX-RS">
+    <properties version="2.2" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SysWeb-Øving4-Oppgave2V3/lib/jersey-container-servlet.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SysWeb-Øving4-Oppgave2V3/lib/javax.ws.rs-api-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SysWeb-Øving4-Oppgave2V3/lib/jersey-client.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SysWeb-Øving4-Oppgave2V3/lib/jersey-common.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SysWeb-Øving4-Oppgave2V3/lib/jersey-container-servlet-core.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SysWeb-Øving4-Oppgave2V3/lib/jersey-server.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

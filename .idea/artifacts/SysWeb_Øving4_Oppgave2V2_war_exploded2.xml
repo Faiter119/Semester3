@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="SysWeb-Øving4-Oppgave2V2:war exploded2">
+    <output-path>$PROJECT_DIR$/../../../artifacts/SysWeb_Øving4_Oppgave2V2_war_exploded2</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="SysWeb-Øving4-Oppgave2V2/web/Web" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="SysWeb-Øving4-Oppgave2V2" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

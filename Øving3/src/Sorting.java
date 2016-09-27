@@ -56,7 +56,7 @@ public class Sorting {
 
         int LOOPS = 10;
         int SIZE = 3000000;
-        int MIN = 0;
+        int MIN = 0 ;
         int MAX = 99;
         long start, end, diff;
 
