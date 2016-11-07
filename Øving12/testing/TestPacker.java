@@ -25,7 +25,7 @@ public class TestPacker {
 
         byte[] search = new byte[]{0,1,2};
 
-        byte[] code = packer.generateCode(compressed,search, 4);
+        byte[] code = packer.generateBackwardsCode(compressed,search, 4);
 
         assertEquals(-4 ,code[0]);
         assertEquals(3, code[1]);
@@ -46,11 +46,31 @@ public class TestPacker {
 
 
     }
-    @Test
-    public void test_Lempel_Ziv_Compress(){
 
-        byte[] result = new byte[]{0,1,2,3,-4,4,4,5,-10,3};
-        assertTrue(Arrays.equals(result, packer.lempelZivCompress(allBytes)));
+    @Test
+    public void test_generate_uncompressedcode(){
+
+        byte[] uncompressed = new byte[]{1,2,3,4,5,7,3,43,23,45,45,45,45,45,34,64,46,36,25,36,78,35,35,47,36,25,25,25,36,0,0,0,0,0,0,0,0,0};
+        int uncompressedCounter = ArrayUtils.trim(uncompressed).length;
+
+        byte[] bytes = packer.generateUncompressedArrayWithCode(uncompressed, uncompressedCounter);
+
+        System.out.println(Arrays.toString(bytes));
+
+    }
+    @Test
+    public void test_packing(){
+
+        byte[] original = new byte[]{1,2,3,4,5, 1,2,3,4,5, 1,2,3,4,5};
+        byte[] packed = new byte[]{5,1,2,3,4,5, -5,5, -7,5};
+
+        Packer packer = new Packer(original);
+
+        byte[] pack = packer.pack();
+
+        System.out.println(Arrays.toString(original));
+        System.out.println(Arrays.toString(pack));
+        assertTrue(Arrays.equals(packed,pack));
 
     }
 }

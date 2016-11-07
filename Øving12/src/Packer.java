@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class Packer {
 
-    private static final int MINIMUM_REPEATING_LENGTH = 3;
+    private static final int MINIMUM_REPEATING_LENGTH = 5; // < 5 gir større, > 5 gir større. 5 er sweetspot
 
     private byte[] allBytes;
 
@@ -21,7 +21,6 @@ public class Packer {
     }
 
     public byte[] pack() {return pack(Byte.MAX_VALUE);}
-
     public byte[] pack(int partitionSize) {
 
         System.out.println("Compressing...");
@@ -31,7 +30,7 @@ public class Packer {
         byte[][] compressedPartitions = new byte[partitions.length][];
 
         for (int i = 0; i < partitions.length; i++) {
-
+            //System.out.println("Partition: "+(i+1));
             compressedPartitions[i] = lempelZivCompress(partitions[i]);
 
         }
@@ -43,43 +42,100 @@ public class Packer {
         return build;
     }
 
-    public byte[] lempelZivCompress(byte[] array) { // Lempel-ziv
+    public byte[] lempelZivCompress(byte[] array) {
+        // Burde bare ha brukt stacks
 
         byte[] compressed = new byte[array.length]; // Kan ikke bli større enn originalen...
-
         int compressedCounter = 0; // indexen i compressed-arrayet, oppfører seg som en stack
+
+        byte[] completeCompressedArray = new byte[array.length+1+(int)(Math.ceil((double)array.length / (double) Byte.MAX_VALUE))]; // worst case nothing can be compressed it will be the length + codes
+        int completeCompressedArrayCounter = 0; // this is getting stupid
+
+        byte[] uncompressedBytes = new byte[Byte.MAX_VALUE]; // buffre bytes som ikke komprimeres
+        int uncompressedCounter = 0;
+
         for (int i = 0; i < array.length; i++) {
 
-            int lengthToCopy = MINIMUM_REPEATING_LENGTH > array.length - i ? array.length - i : MINIMUM_REPEATING_LENGTH;
+            int lengthToCopy = MINIMUM_REPEATING_LENGTH <= array.length - i ? MINIMUM_REPEATING_LENGTH : array.length - i;// Min length eller resten av arrayet
             byte[] search = new byte[lengthToCopy];
-            System.arraycopy(array, i, search, 0, lengthToCopy); // So it does not go out of bounds
+            System.arraycopy(array,i,search,0,lengthToCopy);
+
             //System.out.println("search is: "+new String(search));
 
             if (ArrayUtils.contains(compressed, search)) {
 
-                //System.out.println("Found "+ new String(search) + " in compressed\n\tCompressed is "+ Arrays.toString(compressed));
+                // Write uncompressed bytes to result
+                uncompressedBytes = ArrayUtils.trim(generateUncompressedArrayWithCode(uncompressedBytes, uncompressedCounter));
+                //System.out.println("\tuncompressed: "+ Arrays.toString(uncompressedBytes));
+                System.arraycopy(
+                        uncompressedBytes,
+                        0,
+                        completeCompressedArray,
+                        completeCompressedArrayCounter,
+                        uncompressedBytes.length
+                        );
+                completeCompressedArrayCounter += uncompressedBytes.length;
+                uncompressedCounter = 0;
+                uncompressedBytes = new byte[Byte.MAX_VALUE];
+                // Finished
 
-                search = findLargestRepeatable(array, compressed, search, i);
+                search = ArrayUtils.trim(findLargestRepeatable(array, compressed, search, i));
 
-                // Generating and adding the code
-                byte[] code = generateCode(compressed, search, compressedCounter);
+                //System.out.println("Largest repeat is : "+ Arrays.toString(search));
 
-                //System.out.println("Code is "+ Arrays.toString(code));
-                compressed[compressedCounter++] = code[0];
-                compressed[compressedCounter++] = code[1];
+                byte[] code = generateBackwardsCode(completeCompressedArray, search, completeCompressedArrayCounter); // compression-code (compressed, search, compressedCounter)
+                //System.out.println("code "+Arrays.toString(code));
+                if (completeCompressedArrayCounter+1 >= completeCompressedArray.length) break; // Forhindrer out of bounds på PDF filen.. vet ikke hvorfor det skjer
+                completeCompressedArray[completeCompressedArrayCounter++] = code[0];
+                completeCompressedArray[completeCompressedArrayCounter++] = code[1];
 
-                i += search.length - 1; // Skipper forbi det du nettopp komprimerte
-                //compressed = ArrayUtils.trim(compressed, i+1, i+search.length);
+                i += search.length-1; // Skipper forbi det du nettopp komprimerte
 
-                //
+            }
+            else if (uncompressedCounter < Byte.MAX_VALUE){ // Still space for more uncompressed bytes
+                //System.out.println("\t\tStoring: "+array[i]);
+                uncompressedBytes[uncompressedCounter++] = array[i];
+                compressed[compressedCounter++] = array[i];
             }
             else {
+
+                // Write uncompressed bytes to result
+                uncompressedBytes = generateUncompressedArrayWithCode(uncompressedBytes, uncompressedCounter);
+                //System.out.println("\t\tWriting: "+ Arrays.toString(uncompressedBytes));
+                System.arraycopy(
+                        uncompressedBytes,
+                        0,
+                        completeCompressedArray,
+                        completeCompressedArrayCounter,
+                        uncompressedBytes.length
+                );
+                completeCompressedArrayCounter += uncompressedBytes.length;
+                uncompressedCounter = 0;
+                uncompressedBytes = new byte[Byte.MAX_VALUE];
+                // Finished
+
+                uncompressedBytes[uncompressedCounter++] = array[i];
                 compressed[compressedCounter++] = array[i];
+
             }
 
             //System.out.println("End of for\n\tCompressed: " + Arrays.toString(compressed) + "\n\tSearch: \t" + Arrays.toString(search));
         }
-        return ArrayUtils.trim(compressed);
+
+        if (uncompressedCounter > 0){// Still bytes in the buffer
+
+            uncompressedBytes = generateUncompressedArrayWithCode(uncompressedBytes, uncompressedCounter);
+            //System.out.println("Writing rest of buffer: "+ Arrays.toString(uncompressedBytes));
+            System.arraycopy(
+                    uncompressedBytes,
+                    0,
+                    completeCompressedArray,
+                    completeCompressedArrayCounter,
+                    ArrayUtils.trim(uncompressedBytes).length
+            );
+
+        }
+        return ArrayUtils.trim(completeCompressedArray);
     }
 
     /**
@@ -127,27 +183,51 @@ public class Packer {
      * @param i          the next index in the compressed array
      * @return an array with code for length backwards at 0, and length of the word at 1
      */
-    public byte[] generateCode(byte[] compressed, byte[] search, int i) {
+    public byte[] generateBackwardsCode(byte[] compressed, byte[] search, int i) {
 
         byte length = (byte) search.length;
 
         byte index = (byte) ArrayUtils.indexOf(compressed, search);
 
+        //System.out.println("\tCompressed: "+ Arrays.toString(compressed)+" - Search: "+ Arrays.toString(search)+" - i: "+i+" - index: "+index);
+
         return new byte[]{(byte) -(i - (index)), length};
+
+    }
+
+    public byte[] generateUncompressedArrayWithCode(byte[] uncompressedBytes, int uncompressedCounter){ // [1,2,3,4] -> [4,1,2,3,4]
+
+        final byte[] original = Arrays.copyOf(uncompressedBytes, uncompressedBytes.length);
+
+        uncompressedBytes = new byte[uncompressedCounter+1];
+
+        uncompressedBytes[0] = (byte) uncompressedCounter; // alltid mindre enn en byte, fordi eller skal vi skrive en ny kode også begynne å telle på nytt
+
+        System.arraycopy(
+                original,
+                0,
+                uncompressedBytes,
+                1,
+                uncompressedBytes.length-1
+
+        );
+
+        return uncompressedBytes;
 
     }
 
     public static void main(String[] args) throws IOException {
 
-        byte[] bytes = Files.readAllBytes(Paths.get("F:/IntelliJ/IntelliJ IDEA 2016.1/IntelliJ_Workspace/Semester3/Øving12/files/opg12.txt"));
+        byte[] bytes = Files.readAllBytes(Paths.get("F:/IntelliJ/IntelliJ IDEA 2016.1/IntelliJ_Workspace/Semester3/Øving12/files/diverse.txt"));
 
         Packer packer = new Packer(bytes);
 
         System.out.println("All the bytes: " + Arrays.toString(packer.allBytes));
 
-        byte[] compressed = packer.pack(); // Krasjer med Integer.MAX, mye tregere men bedre med Short.Max, raskt med Byte.MAX
+        byte[] compressed = packer.pack(); // Krasjer med Integer.MAX, mye tregere men bedre med Short.Max, raskt med Byte.MAX, Short gir overflow i lengden
 
         System.out.println(Arrays.toString(compressed));
+
         //System.out.println(new String(compressed));
 
         File output = new File("F:/IntelliJ/IntelliJ IDEA 2016.1/IntelliJ_Workspace/Semester3/Øving12/files/outputFile.txt");

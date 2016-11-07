@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
 /**
@@ -16,57 +17,64 @@ public class UnPacker {
 
     public byte[] unpack(){
 
-        int originalLength = findOriginalLengthOf(compressed); // Fucks up if negative bytes in the text, ala æ ø å...
+        int originalLength = findOriginalLengthOf(compressed);
 
         byte[] uncompressed = new byte[originalLength];
 
         int uncompressedIndex = 0;
         for (int i = 0; i < compressed.length; i++) {
 
-            byte distance = compressed[i];
+            byte code = compressed[i];
 
-            if (distance < 0){ // kode
+            //System.out.println(code);
 
-                distance = (byte) -distance;
-                //System.out.println(distance);
+            if (code > 0){
 
-                int length = compressed[i+1]; // lengde på ordet man skal kopiere
-
-                int indexOfOriginal = i-(distance);
-
-                if (indexOfOriginal < 0 ) System.out.println(compressed[i]+" - "+compressed[i+1]+" - i: "+i);
-
-                System.out.println("Original Index: "+indexOfOriginal+" - Length: "+length);
-
-                for (int j = 0; j < length; j++) {
-
-                    int newIndex = indexOfOriginal + j;
-
-                    //if (newIndex < 0) break;
-
-                    if (uncompressedIndex < uncompressed.length) uncompressed[uncompressedIndex++] = compressed[newIndex];
-
-                }
-                i++; // skips the other byte in the code
+                System.arraycopy(
+                        compressed,
+                        i+1, // tar ikke med koden
+                        uncompressed,
+                        uncompressedIndex,
+                        code
+                );
+                uncompressedIndex += code;
+                i+= code;
 
             }
-            else if (uncompressedIndex < uncompressed.length) uncompressed[uncompressedIndex++] = compressed[i];
+            else {
+                int length = compressed[i+1];
 
+                System.arraycopy(
+                        compressed,
+                        i-(-code), // der koden peker til
+                        uncompressed,
+                        uncompressedIndex,
+                        length
+                );
+                uncompressedIndex += length;
+                i+= 1;
+            }
         }
         return uncompressed;
     }
-    private int findOriginalLengthOf(byte[] compressedArray){
-        int totalLength = compressed.length;
-        for (int i = 0; i < compressed.length; i++) {
+    public int findOriginalLengthOf(byte[] compressedArray){
+        int totalLength = 0;
 
-            byte b = compressed[i];
+        for (int i = 0; i < compressedArray.length;i++) {
 
-            if (b < 0){ // b er en referanse
+            byte code = compressedArray[i]; // start of code
 
-                int length = compressed[i+1]-2; // kodene tar 2 plass
+            if (code > 0) {
+                totalLength += code;
+                i+= code;
+            }
+            else { // b er en referanse
+
+                int length = compressedArray[i+1];
 
                 totalLength+= length;
 
+                i+= 1;
 
             }
 
@@ -79,17 +87,14 @@ public class UnPacker {
 
         byte[] bytes = Files.readAllBytes(Paths.get("F:/IntelliJ/IntelliJ IDEA 2016.1/IntelliJ_Workspace/Semester3/Øving12/files/outputFile.txt"));
 
-      /*  Packer packer = new Packer(bytes);
-        byte[] compressed = packer.pack();*/
-
         UnPacker unPacker = new UnPacker(bytes);
         byte[] unpacked = unPacker.unpack();
 
         System.out.println(Arrays.toString(bytes));
         System.out.println(Arrays.toString(unpacked));
-        System.out.println(new String(unpacked));
+        //System.out.println(new String(unpacked));
+        System.out.println("Packed: "+bytes.length+" - Unpacked: "+unpacked.length);
 
-
+        Files.write(Paths.get("F:/IntelliJ/IntelliJ IDEA 2016.1/IntelliJ_Workspace/Semester3/Øving12/files/unpackedFile.txt"), unpacked, StandardOpenOption.CREATE);
     }
-
 }
